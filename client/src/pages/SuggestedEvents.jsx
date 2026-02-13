@@ -1,55 +1,76 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import EventCard from "../components/EventCard";
 
-export default function SuggestedEvents() {
+export default function SuggestedEvents({ userInfo }) {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:5000/api/events/all")
-            .then(res => setEvents(res.data));
-    }, []);
-
-    const handleGetTicket = async (event) => {
-        // Call backend to create Razorpay order
-        const { data } = await axios.post("http://localhost:5000/api/tickets/order", { amount: event.price });
-
-        const options = {
-            key: "YOUR_RAZORPAY_KEY",
-            amount: data.amount,
-            currency: data.currency,
-            order_id: data.id,
-            name: event.title,
-            description: "Event Ticket Purchase",
-            handler: async function (response) {
-                // After success, save ticket
-                await axios.post("http://localhost:5000/api/tickets/book", {
-                    eventId: event._id,
-                    paymentId: response.razorpay_payment_id,
-                    userId: "CURRENT_USER_ID"
-                });
-                alert("🎉 Ticket booked successfully!");
+        const fetchEvents = async () => {
+            try {
+                // Fetch recommended/all events
+                const res = await axios.get("http://localhost:5000/api/events");
+                setEvents(res.data);
+            } catch (err) {
+                console.error(err);
+                setEvents([]);
             }
         };
+        fetchEvents();
+    }, []);
 
-        const rzp = new window.Razorpay(options);
-        rzp.open();
+    const handleBookTicket = async (eventId) => {
+        try {
+            if (!userInfo) {
+                alert("⚠ Please login to book tickets.");
+                return;
+            }
+
+            const token = userInfo.token;
+            await axios.post(
+                "http://localhost:5000/api/tickets",
+                { eventId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            alert("🎟 Ticket booked successfully! Check 'My Tickets' section.");
+        } catch (err) {
+            console.error("Error booking ticket", err);
+            alert("❌ Error booking ticket. Please try again.");
+        }
     };
 
     return (
-        <div className="p-6">
-            <h1 className="text-xl font-bold mb-4">Suggested Events</h1>
-            {events.map(event => (
-                <div key={event._id} className="border p-4 mb-2">
-                    <h2>{event.title}</h2>
-                    <p>{event.description}</p>
-                    <p>₹{event.price}</p>
-                    <button
-                        onClick={() => handleGetTicket(event)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded">
-                        Get Ticket
-                    </button>
+        <div className="min-h-screen bg-gray-50 px-6 py-12">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800">Events For You</h1>
+                        <p className="text-gray-500 mt-1">Handpicked events based on your interests.</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button className="px-4 py-2 bg-white border rounded-full text-sm font-medium hover:border-red-400 hover:text-red-500 transition">Music</button>
+                        <button className="px-4 py-2 bg-white border rounded-full text-sm font-medium hover:border-red-400 hover:text-red-500 transition">Comedy</button>
+                    </div>
                 </div>
-            ))}
+
+                {events.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-xl shadow-sm border">
+                        <p className="text-gray-400 text-lg italic">No suggested events found at the moment.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        {events.map((event) => (
+                            <EventCard
+                                key={event._id}
+                                event={event}
+                                userInfo={userInfo}
+                                onBook={handleBookTicket}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

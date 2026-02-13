@@ -2,18 +2,17 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function Profile() {
+function Profile({ userInfo }) {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("userInfo");
-        if (!storedUser) {
+        if (!userInfo) {
             navigate("/login");
             return;
         }
 
-        const token = JSON.parse(storedUser).token;
+        const token = userInfo.token;
 
         const fetchProfile = async () => {
             try {
@@ -23,44 +22,52 @@ function Profile() {
                 setUser(res.data);
             } catch (err) {
                 console.error(err);
-                localStorage.removeItem("userInfo");
-                navigate("/login");
+                // If token expired, we might want to logout, but let's just show error for now
+                // navigate("/login");
             }
         };
 
         fetchProfile();
-    }, [navigate]);
+    }, [navigate, userInfo]);
 
     if (!user) {
         return <div className="text-center mt-10 text-lg">Loading profile...</div>;
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 px-6 py-10">
-            <div className="bg-white max-w-xl mx-auto rounded-lg shadow-md p-8">
-                <h1 className="text-3xl font-bold mb-6 text-center">👤 My Profile</h1>
-                <div className="space-y-4">
-                    <p>
-                        <span className="font-semibold">Name:</span> {user.name}
-                    </p>
-                    <p>
-                        <span className="font-semibold">Email:</span> {user.email}
-                    </p>
-                    <p>
-                        <span className="font-semibold">Role:</span>{" "}
+        <div className="min-h-screen bg-[#F5F5F5] px-6 py-12 flex items-center justify-center">
+            <div className="bg-white max-w-xl w-full rounded-xl shadow-md p-8">
+                <div className="flex flex-col items-center mb-6">
+                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-4xl mb-4">
+                        👤
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800">{user.name}</h1>
+                    <p className="text-gray-500">{user.email}</p>
+                </div>
+
+                <div className="space-y-4 border-t pt-6">
+                    <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-600">Account Type:</span>
                         <span
-                            className={`px-2 py-1 rounded-lg text-white ${
-                                user.role === "organizer" ? "bg-indigo-600" : "bg-green-600"
+                            className={`px-3 py-1 rounded-full text-xs font-bold uppercase text-white ${
+                                user.role === "organizer" ? "bg-red-500" : "bg-green-500"
                             }`}
                         >
-              {user.role}
-            </span>
-                    </p>
-                    <p>
-                        <span className="font-semibold">Joined:</span>{" "}
-                        {new Date(user.createdAt).toDateString()}
-                    </p>
+                            {user.role}
+                        </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-600">Joined On:</span>
+                        <span className="text-gray-800">{new Date(user.createdAt).toDateString()}</span>
+                    </div>
                 </div>
+
+                <button
+                    onClick={() => navigate("/")}
+                    className="mt-8 w-full border border-red-500 text-red-500 py-2 rounded-lg font-bold hover:bg-red-50 transition"
+                >
+                    Back to Home
+                </button>
             </div>
         </div>
     );

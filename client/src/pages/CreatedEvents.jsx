@@ -25,23 +25,24 @@ function CreatedEvents({ userInfo }) {
     }, [userInfo]);
 
     return (
-        <div className="min-h-screen bg-gray-50 px-6 py-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+        <div className="min-h-screen bg-[#F5F5F5] px-6 py-12 max-w-7xl mx-auto">
+            <h2 className="text-2xl font-bold mb-8 text-gray-800">
                 Your Created Events
             </h2>
 
             {events.length === 0 ? (
-                <p className="text-center text-gray-500">
-                    You haven’t created any events yet.
-                </p>
+                <div className="bg-white p-8 rounded-lg shadow-sm text-center">
+                    <p className="text-gray-500 mb-4">You haven’t created any events yet.</p>
+                    <a href="/create-event" className="text-red-500 font-medium hover:underline">Create Your First Event</a>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                     {events.map((event) => (
                         <EventCard
                             key={event._id}
                             event={event}
                             userInfo={userInfo}
-                            // 👇 No booking button for organizer
+                            // No booking button for organizer
                             onBook={null}
                         />
                     ))}
