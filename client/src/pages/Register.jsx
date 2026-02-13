@@ -1,12 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-function Register() {
+function Register({ setUserInfo }) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("attendee"); // default role
     const [message, setMessage] = useState("");
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -17,9 +19,10 @@ function Register() {
                 password,
                 role,
             });
+            setUserInfo(res.data);
             localStorage.setItem("userInfo", JSON.stringify(res.data));
             setMessage("Registration successful!");
-            window.location.href = "/dashboard"; // redirect to dashboard
+            navigate("/"); // redirect to home
         } catch (err) {
             setMessage(err.response?.data.message || "Registration failed");
         }

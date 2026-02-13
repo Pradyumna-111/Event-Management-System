@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Login({ setUserInfo }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
@@ -13,7 +13,8 @@ function Login() {
         try {
             const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
 
-            // save user info in localStorage
+            // save user info in state and localStorage
+            setUserInfo(res.data);
             localStorage.setItem("userInfo", JSON.stringify(res.data));
 
             setMessage("✅ Login successful!");
