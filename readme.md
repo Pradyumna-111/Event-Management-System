@@ -53,6 +53,9 @@ git clone <your-repo-url>
       CLOUDINARY_CLOUD_NAME=your_cloud_name
       CLOUDINARY_API_KEY=your_api_key
       CLOUDINARY_API_SECRET=your_api_secret
+      GEMINI_API_KEY=your_gemini_api_key
+      CASHFREE_APP_ID=your_cashfree_app_id
+      CASHFREE_SECRET_KEY=your_cashfree_secret_key
       ```
 
 4. **Run the app:**
