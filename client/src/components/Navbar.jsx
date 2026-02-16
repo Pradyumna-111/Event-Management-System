@@ -1,87 +1,135 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Search, MapPin, Menu, X, LogOut, User as UserIcon, Ticket, PlusCircle } from "lucide-react";
+import { useState } from "react";
 
 function Navbar({ userInfo, onLogout }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleLogout = () => {
         onLogout();
         navigate("/login");
     };
 
-    // Extract role safely
     const role = userInfo?.user?.role || userInfo?.role;
+    const name = userInfo?.user?.name || userInfo?.name;
 
-    // Function to highlight active link
-    const getLinkClass = (path) =>
-        `hover:underline ${location.pathname === path ? "font-bold underline" : ""}`;
+    const isActive = (path) => location.pathname === path;
 
     return (
-        <nav className="bg-[#333545] text-white px-6 py-3 flex flex-col md:flex-row justify-between items-center shadow-md gap-4">
-            {/* Left side: Brand and Search */}
-            <div className="flex items-center gap-8 w-full md:w-auto">
-                <Link to="/" className="text-2xl font-bold tracking-wider text-red-500">EVENTLY</Link>
+        <nav className="bg-[#333545] text-white sticky top-0 z-50 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16 gap-4">
+                    {/* Logo & Search */}
+                    <div className="flex items-center gap-8 flex-1">
+                        <Link to="/" className="flex-shrink-0">
+                            <span className="text-2xl font-black tracking-tighter text-white">EVENT<span className="text-red-500">LY</span></span>
+                        </Link>
 
-                <div className="relative flex-1 md:w-96">
-                    <input
-                        type="text"
-                        placeholder="Search for Events, Plays, Sports and Activities"
-                        className="w-full bg-white text-gray-800 px-10 py-2 rounded-md text-sm outline-none"
-                    />
-                    <span className="absolute left-3 top-2 text-gray-400">🔍</span>
+                        <div className="hidden md:block flex-1 max-w-xl relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-red-500 transition-colors" />
+                            <Input
+                                type="text"
+                                placeholder="Search for Events, Plays, Sports and Activities"
+                                className="w-full bg-white/10 border-none text-white placeholder:text-gray-400 pl-10 h-10 rounded-md focus-visible:ring-1 focus-visible:ring-red-500 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Desktop Menu */}
+                    <div className="hidden md:flex items-center gap-6">
+                        <div className="flex items-center gap-1 cursor-pointer hover:text-red-400 transition-colors text-sm font-medium">
+                            <MapPin className="h-4 w-4" />
+                            <span>Select Location</span>
+                        </div>
+
+                        {!userInfo ? (
+                            <div className="flex items-center gap-3">
+                                <Link to="/login">
+                                    <Button variant="ghost" className="text-white hover:text-red-500 hover:bg-white/10 font-bold">Login</Button>
+                                </Link>
+                                <Link to="/register">
+                                    <Button className="bg-red-500 hover:bg-red-600 text-white font-bold px-6">Register</Button>
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4 border-l border-white/10 pl-6">
+                                {role === "attendee" && (
+                                    <Link to="/my-tickets">
+                                        <Button variant="ghost" size="sm" className="text-white hover:text-red-500 gap-2">
+                                            <Ticket className="h-4 w-4" /> My Tickets
+                                        </Button>
+                                    </Link>
+                                )}
+                                {role === "organizer" && (
+                                    <Link to="/create-event">
+                                        <Button variant="ghost" size="sm" className="text-white hover:text-red-500 gap-2">
+                                            <PlusCircle className="h-4 w-4" /> Create
+                                        </Button>
+                                    </Link>
+                                )}
+
+                                <Link to="/profile" className="flex items-center gap-2 group">
+                                    <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-red-500 transition-all">
+                                        <AvatarFallback className="bg-red-500 text-white font-bold">
+                                            {name?.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Link>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleLogout}
+                                    className="text-white hover:text-red-500 hover:bg-white/10"
+                                >
+                                    <LogOut className="h-5 w-5" />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile menu button */}
+                    <div className="md:hidden flex items-center">
+                        <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white">
+                            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                        </Button>
+                    </div>
                 </div>
             </div>
 
-            {/* Right side: Location, Menu, Auth */}
-            <div className="flex gap-6 items-center w-full md:w-auto justify-between md:justify-end">
-                <div className="flex items-center gap-1 cursor-pointer hover:text-gray-300">
-                    <span className="text-sm font-medium">Select Location</span>
-                    <span className="text-xs">▼</span>
+            {/* Mobile Menu */}
+            {isMenuOpen && (
+                <div className="md:hidden bg-[#2b2d3d] border-t border-white/5 animate-in slide-in-from-top duration-300">
+                    <div className="px-4 pt-2 pb-3 space-y-1">
+                        <div className="p-2 relative">
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input placeholder="Search events..." className="bg-white/10 border-none text-white pl-10" />
+                        </div>
+                        {!userInfo ? (
+                            <>
+                                <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                                <Link to="/register" className="block px-3 py-2 rounded-md text-base font-medium text-red-500" onClick={() => setIsMenuOpen(false)}>Register</Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Profile</Link>
+                                {role === "attendee" && (
+                                    <Link to="/my-tickets" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>My Tickets</Link>
+                                )}
+                                {role === "organizer" && (
+                                    <Link to="/create-event" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Create Event</Link>
+                                )}
+                                <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-white/5">Logout</button>
+                            </>
+                        )}
+                    </div>
                 </div>
-
-                {!userInfo ? (
-                    <>
-                        <Link to="/login" className={getLinkClass("/login")}>Login</Link>
-                        <Link to="/register" className={getLinkClass("/register")}>Register</Link>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/profile" className={getLinkClass("/profile")}>Profile</Link>
-
-                        {/* Attendee Links */}
-                        {role === "attendee" && (
-                            <>
-                                <Link to="/suggested-events" className={getLinkClass("/suggested-events")}>
-                                    Suggested
-                                </Link>
-                                <Link to="/my-tickets" className={getLinkClass("/my-tickets")}>
-                                    My Tickets
-                                </Link>
-                            </>
-                        )}
-
-                        {/* Organizer Links */}
-                        {role === "organizer" && (
-                            <>
-                                <Link to="/create-event" className={getLinkClass("/create-event")}>
-                                    Create Event
-                                </Link>
-                                <Link to="/created-events" className={getLinkClass("/created-events")}>
-                                    Created
-                                </Link>
-                            </>
-                        )}
-
-                        {/* Logout */}
-                        <button
-                            onClick={handleLogout}
-                            className="ml-4 bg-red-500 px-3 py-1 rounded hover:bg-red-600"
-                        >
-                            Logout
-                        </button>
-                    </>
-                )}
-            </div>
+            )}
         </nav>
     );
 }
