@@ -13,14 +13,19 @@ import PaymentPage from "./pages/PaymentPage";   // ✅ for Cashfree
 import CreatedEvents from "./pages/CreatedEvents"; // ✅ organizer's events
 
 function App() {
-    const [userInfo, setUserInfo] = useState(null);
+    const [userInfo, setUserInfo] = useState(() => {
+        const stored = localStorage.getItem("userInfo");
+        return stored ? JSON.parse(stored) : null;
+    });
 
-    // Load stored user on app mount
+    // Sync with localStorage if needed (already handled in Login/Logout, but good for other tabs)
     useEffect(() => {
-        const storedUser = localStorage.getItem("userInfo");
-        if (storedUser) {
-            setUserInfo(JSON.parse(storedUser));
-        }
+        const handleStorage = () => {
+            const stored = localStorage.getItem("userInfo");
+            setUserInfo(stored ? JSON.parse(stored) : null);
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
     }, []);
 
     // Logout handler

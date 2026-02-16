@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import EventCard from "../components/EventCard";
 import ChatbotWidget from "../components/ChatbotWidget";
 import axios from "axios";
+import { Button } from "../components/ui/button";
+import { ChevronRight, Filter } from "lucide-react";
 
 function Home({ userInfo }) {
     const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeCategory, setActiveCategory] = useState("All");
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -13,109 +17,129 @@ function Home({ userInfo }) {
                 setEvents(res.data);
             } catch (err) {
                 console.error("Error fetching events", err);
-                // fallback demo events
+                // Fallback demo events if API fails
                 setEvents([
                     {
-                        _id: 1,
-                        title: "Music Concert",
+                        _id: "1",
+                        title: "Grand Music Festival 2025",
                         date: "2025-09-20",
-                        description: "Amazing live music",
-                        banner: "",
+                        description: "Experience the magic of live music under the stars with world-class artists.",
+                        location: "Central Park, NY",
+                        category: "Music",
+                        price: 1500,
+                        banner: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1470&q=80",
                     },
                     {
-                        _id: 2,
-                        title: "Art Exhibition",
+                        _id: "2",
+                        title: "Modern Art Exhibition",
                         date: "2025-09-25",
-                        description: "Modern art display",
-                        banner: "",
+                        description: "Explore the boundaries of contemporary art in this curated display.",
+                        location: "Metro Museum",
+                        category: "Workshops",
+                        price: 500,
+                        banner: "https://images.unsplash.com/photo-1531050171669-015c2859ec1a?auto=format&fit=crop&w=800&q=80",
                     },
                 ]);
+            } finally {
+                setLoading(false);
             }
         };
         fetchEvents();
     }, []);
 
-    // ✅ Ticket Booking
-    const handleBookTicket = async (eventId) => {
-        try {
-            if (!userInfo) {
-                alert("⚠ Please login to book tickets.");
-                return;
-            }
-
-            if (userInfo.user.role !== "attendee") {
-                alert("⚠ Only attendees can book tickets!");
-                return;
-            }
-
-            const token = userInfo.token;
-            await axios.post(
-                "http://localhost:5000/api/tickets",
-                { eventId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            alert("🎟 Ticket booked successfully!");
-        } catch (err) {
-            console.error("Error booking ticket", err);
-            alert("❌ Error booking ticket");
-        }
-    };
-
     const categories = ["All", "Music", "Comedy", "Workshops", "Sports", "Performances", "Conferences"];
 
+    const filteredEvents = activeCategory === "All"
+        ? events
+        : events.filter(e => e.category === activeCategory);
+
     return (
-        <div className="min-h-screen bg-[#F5F5F5]">
-            {/* Featured Carousel (Simplified) */}
-            <section className="w-full bg-[#EBEBEB] py-4">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="h-48 md:h-80 w-full rounded-xl overflow-hidden relative shadow-md">
+        <div className="min-h-screen bg-[#F5F5F5] pb-12">
+            {/* Hero Section */}
+            <section className="bg-[#EBEBEB] py-6 md:py-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="relative aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden shadow-2xl group">
                         <img
                             src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1470&q=80"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             alt="Featured Event"
                         />
-                        <div className="absolute inset-0 bg-black/30 flex items-end p-8">
-                            <div>
-                                <h2 className="text-white text-3xl md:text-5xl font-bold mb-2">Grand Music Festival 2025</h2>
-                                <p className="text-white/90 text-lg">Experience the magic of live music under the stars.</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6 md:p-12">
+                            <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                                <h2 className="text-white text-3xl md:text-6xl font-black italic uppercase tracking-tighter mb-4 leading-none">
+                                    Grand Music Festival <span className="text-red-500">2025</span>
+                                </h2>
+                                <p className="text-white/80 text-base md:text-xl font-medium mb-6 line-clamp-2">
+                                    Experience the magic of live music under the stars. Join thousands for an unforgettable night of rhythm and lights.
+                                </p>
+                                <Button className="bg-red-500 hover:bg-red-600 text-white font-black italic uppercase tracking-widest px-8 h-12 rounded-none">
+                                    Book Now
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Categories Filter */}
-            <section className="bg-white border-b sticky top-0 z-20">
-                <div className="max-w-7xl mx-auto px-6 py-3 overflow-x-auto no-scrollbar flex gap-8 whitespace-nowrap text-sm font-medium text-gray-600">
-                    {categories.map(cat => (
-                        <button key={cat} className="hover:text-red-500 transition cursor-pointer">{cat}</button>
-                    ))}
+            {/* Sticky Categories */}
+            <section className="bg-white border-b sticky top-16 z-40 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1">
+                        <div className="flex items-center gap-2 text-gray-400 mr-2 shrink-0">
+                            <Filter className="h-4 w-4" />
+                            <span className="text-xs font-black uppercase tracking-widest">Filters</span>
+                        </div>
+                        {categories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`whitespace-nowrap px-6 py-1.5 rounded-full text-sm font-bold transition-all border ${
+                                    activeCategory === cat
+                                    ? "bg-red-500 text-white border-red-500 shadow-md shadow-red-100"
+                                    : "bg-gray-50 text-gray-600 border-gray-100 hover:border-red-200 hover:text-red-500"
+                                }`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            {/* Events Section */}
-            <section className="px-6 py-12 max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                        Recommended Events
-                    </h2>
-                    <button className="text-red-500 text-sm font-medium hover:underline">See All ❯</button>
+            {/* Events Content */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+                <div className="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 className="text-3xl font-black uppercase italic tracking-tighter text-gray-900 flex items-center gap-3">
+                            {activeCategory === "All" ? "Recommended" : activeCategory} <span className="text-red-500">Events</span>
+                        </h2>
+                        <div className="h-1 w-20 bg-red-500 mt-2"></div>
+                    </div>
+                    <Button variant="link" className="text-red-500 font-bold gap-1 group">
+                        See All <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                    {events.map((event) => (
-                        <EventCard
-                            key={event._id}
-                            event={event}
-                            userInfo={userInfo}
-                            onBook={handleBookTicket}
-                        />
-                    ))}
-                </div>
-            </section>
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="aspect-[2/3] rounded-2xl bg-gray-200 animate-pulse"></div>
+                        ))}
+                    </div>
+                ) : filteredEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+                        {filteredEvents.map((event) => (
+                            <EventCard key={event._id} event={event} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-300">
+                        <p className="text-xl font-bold text-gray-400 italic">No events found in this category.</p>
+                        <Button variant="outline" className="mt-4 rounded-xl" onClick={() => setActiveCategory("All")}>Clear Filters</Button>
+                    </div>
+                )}
+            </main>
 
-            {/* Chatbot Widget */}
             <ChatbotWidget />
         </div>
     );
