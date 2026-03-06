@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { Search, MapPin, Menu, X, LogOut, User as UserIcon, Ticket, PlusCircle } from "lucide-react";
+import { Search, MapPin, Menu, X, LogOut, User as UserIcon, Ticket, PlusCircle, Shield, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 
 function Navbar({ userInfo, onLogout }) {
@@ -58,7 +58,7 @@ function Navbar({ userInfo, onLogout }) {
                             </div>
                         ) : (
                             <div className="flex items-center gap-4 border-l border-white/10 pl-6">
-                                {role === "attendee" && (
+                                {role === "participant" && (
                                     <Link to="/my-tickets">
                                         <Button variant="ghost" size="sm" className="text-white hover:text-red-500 gap-2">
                                             <Ticket className="h-4 w-4" /> My Tickets
@@ -66,9 +66,16 @@ function Navbar({ userInfo, onLogout }) {
                                     </Link>
                                 )}
                                 {role === "organizer" && (
-                                    <Link to="/create-event">
+                                    <Link to="/dashboard">
                                         <Button variant="ghost" size="sm" className="text-white hover:text-red-500 gap-2">
-                                            <PlusCircle className="h-4 w-4" /> Create
+                                            <LayoutDashboard className="h-4 w-4" /> Dashboard
+                                        </Button>
+                                    </Link>
+                                )}
+                                {role === "admin" && (
+                                    <Link to="/admin-panel">
+                                        <Button variant="ghost" size="sm" className="text-white hover:text-red-500 gap-2">
+                                            <Shield className="h-4 w-4" /> Admin
                                         </Button>
                                     </Link>
                                 )}
@@ -118,11 +125,14 @@ function Navbar({ userInfo, onLogout }) {
                         ) : (
                             <>
                                 <Link to="/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Profile</Link>
-                                {role === "attendee" && (
+                                {role === "participant" && (
                                     <Link to="/my-tickets" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>My Tickets</Link>
                                 )}
                                 {role === "organizer" && (
-                                    <Link to="/create-event" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Create Event</Link>
+                                    <Link to="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+                                )}
+                                {role === "admin" && (
+                                    <Link to="/admin-panel" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>Admin Panel</Link>
                                 )}
                                 <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-white/5">Logout</button>
                             </>

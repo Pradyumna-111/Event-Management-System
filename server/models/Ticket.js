@@ -5,6 +5,8 @@ const ticketSchema = new mongoose.Schema({
     event: { type: mongoose.Schema.Types.ObjectId, ref: "Event" },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     paymentId: String,
+    qrCode: String,
+    checkedIn: { type: Boolean, default: false },
     bookedAt: { type: Date, default: Date.now }
 });
 
