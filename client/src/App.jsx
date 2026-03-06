@@ -9,8 +9,11 @@ import MyTickets from "./pages/MyTickets";
 import CreateEvent from "./pages/CreateEvent";
 import EventDetails from "./pages/EventDetails";
 import Navbar from "./components/Navbar";
-import PaymentPage from "./pages/PaymentPage";   // ✅ for Cashfree
-import CreatedEvents from "./pages/CreatedEvents"; // ✅ organizer's events
+import PaymentPage from "./pages/PaymentPage";
+import CreatedEvents from "./pages/CreatedEvents";
+import Dashboard from "./pages/Dashboard";
+import AdminPanel from "./pages/AdminPanel";
+import AttendeeManagement from "./pages/AttendeeManagement";
 
 function App() {
     const [userInfo, setUserInfo] = useState(() => {
@@ -18,7 +21,6 @@ function App() {
         return stored ? JSON.parse(stored) : null;
     });
 
-    // Sync with localStorage if needed (already handled in Login/Logout, but good for other tabs)
     useEffect(() => {
         const handleStorage = () => {
             const stored = localStorage.getItem("userInfo");
@@ -28,22 +30,19 @@ function App() {
         return () => window.removeEventListener('storage', handleStorage);
     }, []);
 
-    // Logout handler
     const handleLogout = () => {
         localStorage.removeItem("userInfo");
         setUserInfo(null);
     };
 
-    // ✅ Protected Route wrapper
     const ProtectedRoute = ({ children, role }) => {
         if (!userInfo) return <Navigate to="/login" />;
-        if (role && userInfo.role !== role) return <Navigate to="/" />;
+        if (role && (Array.isArray(role) ? !role.includes(userInfo.role) : userInfo.role !== role)) return <Navigate to="/" />;
         return children;
     };
 
     return (
         <Router>
-            {/* ✅ Navbar rendered once globally with user state */}
             <Navbar userInfo={userInfo} onLogout={handleLogout} />
 
             <Routes>
@@ -64,7 +63,7 @@ function App() {
                 <Route
                     path="/suggested-events"
                     element={
-                        <ProtectedRoute role="attendee">
+                        <ProtectedRoute role="participant">
                             <SuggestedEvents userInfo={userInfo} />
                         </ProtectedRoute>
                     }
@@ -72,7 +71,7 @@ function App() {
                 <Route
                     path="/my-tickets"
                     element={
-                        <ProtectedRoute role="attendee">
+                        <ProtectedRoute role="participant">
                             <MyTickets userInfo={userInfo} />
                         </ProtectedRoute>
                     }
@@ -80,7 +79,7 @@ function App() {
                 <Route
                     path="/create-event"
                     element={
-                        <ProtectedRoute role="organizer">
+                        <ProtectedRoute role={["organizer", "admin"]}>
                             <CreateEvent userInfo={userInfo} />
                         </ProtectedRoute>
                     }
@@ -90,6 +89,30 @@ function App() {
                     element={
                         <ProtectedRoute role="organizer">
                             <CreatedEvents userInfo={userInfo} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute role="organizer">
+                            <Dashboard userInfo={userInfo} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/participants/:eventId"
+                    element={
+                        <ProtectedRoute role={["organizer", "admin"]}>
+                            <AttendeeManagement userInfo={userInfo} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin-panel"
+                    element={
+                        <ProtectedRoute role="admin">
+                            <AdminPanel userInfo={userInfo} />
                         </ProtectedRoute>
                     }
                 />

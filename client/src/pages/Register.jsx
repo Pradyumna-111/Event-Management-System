@@ -10,7 +10,7 @@ function Register({ setUserInfo }) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("attendee");
+    const [role, setRole] = useState("participant");
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
@@ -95,9 +95,9 @@ function Register({ setUserInfo }) {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => setRole("attendee")}
+                                        onClick={() => setRole("participant")}
                                         className={`py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${
-                                            role === "attendee"
+                                            role === "participant"
                                             ? "bg-red-500 text-white border-red-500 shadow-md shadow-red-100"
                                             : "bg-gray-50 text-gray-500 border-transparent hover:border-red-200"
                                         }`}

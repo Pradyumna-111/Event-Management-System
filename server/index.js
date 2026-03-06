@@ -8,6 +8,7 @@ import eventRoutes from "./routes/eventRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import chatbotRoutes from "./routes/chatbotRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 connectDB(); // Connect to MongoDB
@@ -21,7 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/payments", paymentRoutes);  // ✅ Payment routes
-
+app.use("/api/admin", adminRoutes);        // ✅ Admin & Analytics routes
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>

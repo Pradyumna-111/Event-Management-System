@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, default: "attendee" }, // attendee or organizer
+    role: { type: String, default: "participant" }, // participant, organizer, or admin
 }, { timestamps: true });
 
 // Encrypt password before saving
