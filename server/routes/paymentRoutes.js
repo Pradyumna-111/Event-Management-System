@@ -1,5 +1,6 @@
 import express from "express";
-import Stripe from "stripe";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 import dotenv from "dotenv";
 import protect from "../middleware/authMiddleware.js";
 import Ticket from "../models/Ticket.js";
@@ -8,58 +9,61 @@ import Event from "../models/Event.js";
 dotenv.config();
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock");
 
-// Create Stripe Checkout Session
-router.post("/create-checkout-session", protect, async (req, res) => {
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// Create Razorpay Order
+router.post("/create-order", protect, async (req, res) => {
     try {
         const { eventId } = req.body;
-        const customerEmail = req.user.email;
 
-        // Fetch event from database to get official price and title
+        // Fetch event from database to get official price
         const event = await Event.findById(eventId);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: [
-                {
-                    price_data: {
-                        currency: "inr",
-                        product_data: {
-                            name: event.title,
-                        },
-                        unit_amount: event.price * 100, // Stripe expects amount in paise (for INR)
-                    },
-                    quantity: 1,
-                },
-            ],
-            mode: "payment",
-            success_url: `http://localhost:5173/my-tickets?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `http://localhost:5173/events/${eventId}`,
-            customer_email: customerEmail,
-            metadata: {
+        const options = {
+            amount: event.price * 100, // Razorpay expects amount in paise
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+            notes: {
                 eventId: eventId,
-            },
-        });
+                userId: req.user._id.toString()
+            }
+        };
 
-        res.json({ id: session.id, url: session.url });
+        const order = await razorpay.orders.create(options);
+        res.json(order);
     } catch (error) {
-        console.error("Stripe session error:", error);
-        res.status(500).json({ message: "Stripe checkout session creation failed" });
+        console.error("Razorpay order error:", error);
+        res.status(500).json({ message: "Razorpay order creation failed" });
     }
 });
 
-// Verify Stripe Session and Create Ticket
-router.post("/verify-session", protect, async (req, res) => {
+// Verify Razorpay Payment and Create Ticket
+router.post("/verify-payment", protect, async (req, res) => {
     try {
-        const { sessionId, userId } = req.body;
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const userId = req.user._id;
 
-        if (session.payment_status === "paid") {
-            const eventId = session.metadata.eventId;
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest("hex");
+
+        if (expectedSignature === razorpay_signature) {
+            // Retrieve order details from Razorpay to get the correct eventId from notes
+            const order = await razorpay.orders.fetch(razorpay_order_id);
+            const eventId = order.notes.eventId;
+
+            if (!eventId) {
+                return res.status(400).json({ message: "Order metadata missing event information" });
+            }
 
             // Check if ticket already exists
             const existingTicket = await Ticket.findOne({ user: userId, event: eventId });
@@ -70,9 +74,9 @@ router.post("/verify-session", protect, async (req, res) => {
                     bookedAt: new Date()
                 });
             }
-            res.json({ success: true });
+            res.json({ success: true, message: "Payment verified successfully" });
         } else {
-            res.status(400).json({ message: "Payment not completed" });
+            res.status(400).json({ message: "Invalid payment signature" });
         }
     } catch (error) {
         console.error("Verification error:", error);
