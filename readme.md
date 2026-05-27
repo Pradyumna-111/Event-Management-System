@@ -16,7 +16,7 @@ A feature-rich, full-stack event management system built with the MERN stack (Mo
 - **Image Uploads**: Integrated with Cloudinary for seamless event banner uploads.
 
 ### 🎟 Ticketing & Registration
-- **Online Booking**: Integrated with **Stripe** for secure, real-time payment processing.
+- **Online Booking**: Integrated with **Razorpay** for secure, real-time payment processing.
 - **QR Code Tickets**: Automatically generate unique QR codes for every ticket booked.
 - **Attendee Check-in**: Organizers can scan QR codes to track attendance in real-time.
 - **Certificates**: Automatically generate and download PDF participation certificates after the event.
@@ -37,7 +37,7 @@ A feature-rich, full-stack event management system built with the MERN stack (Mo
 
 - **Frontend**: React, Vite, Tailwind CSS, Lucide React, Recharts, jsPDF.
 - **Backend**: Node.js, Express, MongoDB (Mongoose).
-- **Payments**: Stripe.
+- **Payments**: Razorpay.
 - **Storage**: Cloudinary, Multer.
 - **Communication**: Nodemailer.
 - **Tools**: JWT, bcryptjs, qrcode, json2csv.
@@ -81,7 +81,8 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 GEMINI_API_KEY=your_google_gemini_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 SMTP_HOST=your_smtp_host
 SMTP_PORT=587
 SMTP_USER=your_smtp_user

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -10,11 +10,7 @@ import { jsPDF } from "jspdf";
 export default function MyTickets({ userInfo }) {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [verifying, setVerifying] = useState(false);
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-
-    const sessionId = searchParams.get("session_id");
 
     useEffect(() => {
         if (!userInfo) {
@@ -23,28 +19,6 @@ export default function MyTickets({ userInfo }) {
         }
 
         const userId = userInfo?._id || userInfo?.user?._id;
-
-        const handlePostPayment = async () => {
-            if (sessionId) {
-                setVerifying(true);
-                try {
-                    const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-                    await axios.post("http://localhost:5000/api/payments/verify-session", {
-                        sessionId,
-                        userId
-                    }, config);
-                    // Remove session_id from URL
-                    window.history.replaceState({}, document.title, "/my-tickets");
-                } catch (err) {
-                    console.error("Verification failed", err);
-                } finally {
-                    setVerifying(false);
-                    fetchTickets(userId);
-                }
-            } else {
-                fetchTickets(userId);
-            }
-        };
 
         const fetchTickets = async (uid) => {
             try {
@@ -58,8 +32,8 @@ export default function MyTickets({ userInfo }) {
             }
         };
 
-        handlePostPayment();
-    }, [userInfo, navigate, sessionId]);
+        fetchTickets(userId);
+    }, [userInfo, navigate]);
 
     const downloadCertificate = (ticket) => {
         const doc = new jsPDF({
@@ -112,11 +86,11 @@ export default function MyTickets({ userInfo }) {
         doc.save(`${ticket.event.title}_Certificate.pdf`);
     };
 
-    if (loading || verifying) return (
+    if (loading) return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
              <Loader2 className="h-12 w-12 text-red-500 animate-spin" />
              <p className="font-black italic uppercase tracking-widest text-gray-400 text-sm">
-                {verifying ? "Confirming your booking..." : "Loading your tickets..."}
+                Loading your tickets...
              </p>
         </div>
     );
